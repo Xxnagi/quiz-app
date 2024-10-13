@@ -4,8 +4,6 @@ import Home from "./pages/Home";
 import Quiz from "./pages/Quiz";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-// Import the AuthProvider
-// Import the PrivateRoute
 import { AuthProvider } from "./auth/AuthContext";
 import PrivateRoute from "./auth/PrivateRoute";
 
