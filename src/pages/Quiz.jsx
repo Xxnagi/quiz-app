@@ -19,7 +19,7 @@ const Quiz = () => {
   const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
   const [incorrectAnswersCount, setIncorrectAnswersCount] = useState(0);
   const [error, setError] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(10);
+  const [timeLeft, setTimeLeft] = useState(6000);
   const navigate = useNavigate();
 
   const fetchQuestions = async () => {
