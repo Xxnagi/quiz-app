@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@radix-ui/react-radio-group";
 
 const Quiz = () => {
@@ -12,8 +19,9 @@ const Quiz = () => {
   const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
   const [incorrectAnswersCount, setIncorrectAnswersCount] = useState(0);
   const [error, setError] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(10);
+  const navigate = useNavigate();
 
-  // Fetch questions from the API or localStorage
   const fetchQuestions = async () => {
     const cachedQuestions = localStorage.getItem("quizQuestions");
 
@@ -43,6 +51,19 @@ const Quiz = () => {
     fetchQuestions();
   }, []);
 
+  useEffect(() => {
+    if (timeLeft > 0 && !quizFinished) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    } else if (timeLeft === 0) {
+      calculateResults();
+      setQuizFinished(true);
+    }
+  }, [timeLeft, quizFinished]);
+
   const handleRetry = () => {
     localStorage.removeItem("quizQuestions");
     setQuestions(null);
@@ -53,6 +74,10 @@ const Quiz = () => {
     setIncorrectAnswersCount(0);
     setQuizFinished(false);
     fetchQuestions();
+  };
+
+  const handleGoHome = () => {
+    navigate("/");
   };
 
   if (error) {
@@ -69,7 +94,6 @@ const Quiz = () => {
     return <div>Loading question...</div>;
   }
 
-  // Function to decode HTML entities
   const decodeHTML = (html) => {
     const txt = document.createElement("textarea");
     txt.innerHTML = html;
@@ -128,18 +152,22 @@ const Quiz = () => {
 
   return (
     <div className="w-full h-screen flex justify-center items-center">
-      <Card className="w-fit min-w-[400px] flex flex-col items-center justify-center">
+      <Card className="w-fit min-w-[500px] flex flex-col items-center justify-center">
         <CardHeader>
           <CardTitle className="text-3xl">QUIZZY</CardTitle>
         </CardHeader>
-        <CardContent className="p-3">
+        <CardContent className="p-3 min-w-full">
           {!quizFinished ? (
             <>
-              {/* Display current question index and total questions */}
+              <p className="mb-2 text-red-500">
+                Time Left: {Math.floor(timeLeft / 60)}:
+                {(timeLeft % 60).toString().padStart(2, "0")}
+              </p>
+
               <p className="mb-2">
                 Question {currentQuestionIndex + 1} of {questions.length}
               </p>
-              {/* Decode HTML entities in the question */}
+
               <p>{decodeHTML(currentQuestion.question)}</p>
               <RadioGroup
                 value={selectedAnswer}
@@ -157,7 +185,7 @@ const Quiz = () => {
                     onClick={() => handleSelectAnswer(answer)}
                   >
                     <RadioGroupItem value={answer} id={`r${index}`} />
-                    <p>{decodeHTML(answer)}</p> {/* Decode answer options */}
+                    <p>{decodeHTML(answer)}</p>
                   </Button>
                 ))}
               </RadioGroup>
@@ -172,19 +200,27 @@ const Quiz = () => {
                 Questions Answered:{" "}
                 {correctAnswersCount + incorrectAnswersCount}
               </p>
+
               <Button className="mt-4" onClick={handleRetry}>
                 Retry Quiz
+              </Button>
+              <Button className="mt-4 ml-2" onClick={handleGoHome}>
+                Back to Home
               </Button>
             </div>
           )}
         </CardContent>
 
         {!quizFinished && (
-          <div className="flex justify-between w-full px-4 pb-4">
-            <Button onClick={handleNext} disabled={!selectedAnswer}>
+          <CardFooter className="w-full p-3">
+            <Button
+              onClick={handleNext}
+              disabled={!selectedAnswer}
+              className="w-full"
+            >
               {currentQuestionIndex < questions.length - 1 ? "Next" : "Finish"}
             </Button>
-          </div>
+          </CardFooter>
         )}
       </Card>
     </div>
